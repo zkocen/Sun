@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/container"
     tools:context=".DetailActivity">
 
 
@@ -10,6 +11,7 @@
         android:id="@+id/detailed_forecast_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Vreme"/>
+        android:paddingLeft="16dp"
+        android:text=""/>
 
 </RelativeLayout>

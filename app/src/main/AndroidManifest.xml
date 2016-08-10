@@ -21,7 +21,6 @@
         <activity
             android:name=".DetailActivity"
             android:label="@string/title_activity_detail"
-            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity"
             android:icon="@drawable/ic_reply_white_24dp">
             <meta-data
