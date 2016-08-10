@@ -1,5 +1,6 @@
 package com.kocen.zan.sun;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -25,6 +28,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import android.text.format.Time;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +43,7 @@ public class ForecastFragment extends Fragment {
 
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
-    private ArrayAdapter<String> mForecastAdapter;
+    public ArrayAdapter<String> mForecastAdapter;
 
     public ForecastFragment() {
     }
@@ -77,7 +81,7 @@ public class ForecastFragment extends Fragment {
                 "Thursday Sunny, very clear 25C"
         };
 
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastStr));
+        final List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastStr));
 
         mForecastAdapter = new ArrayAdapter<String>(
                 getActivity(), //current context
@@ -88,6 +92,20 @@ public class ForecastFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                Intent i = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, mForecastAdapter.getItem(position));
+                startActivity(i);
+
+//                Toast toast = Toast.makeText(mForecastAdapter.getContext(), "Weather info: " +
+//                        mForecastAdapter.getItem(position), Toast.LENGTH_SHORT);
+//                toast.show();
+            }
+        });
 
         return rootView;
     }
