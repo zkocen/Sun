@@ -1,6 +1,11 @@
 <resources>
+    <!-- name of the main screen -->
     <string name="app_name">Sun is shining</string>
-    <string name="action_refresh">Refresh</string>
-    <string name="action_settings">Setting</string>
+    <!-- By convention "action" denotes that this string will be
+     on the actionBar-->
+    <string name="action_settings">Settings</string>
+    <!--Menu label to fetch updated weather -->
+    <string name="action_refresh" translatable="false">Refresh</string>
     <string name="title_activity_detail">Details</string>
+    <string name="title_settings_detail">Settings</string>
 </resources>
