@@ -29,18 +29,34 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.forecastfragment, menu);
-        return true;
+        getMenuInflater().inflate(R.menu.detailmenu, menu);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            return true;
+        if (id == R.id.settings_menu){
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        int id = item.getItemId();
+//        if (id == R.id.action_refresh) {
+//            return true;
+//        }
+//        if(id == R.id.action_settings){
+//            Intent intent = new Intent(this, SettingsActivity.class);
+//            this.startActivity(intent);
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
+//
 
     public static class DetailFragment extends Fragment{
         public DetailFragment(){

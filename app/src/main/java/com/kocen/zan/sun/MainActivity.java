@@ -1,7 +1,10 @@
 package com.kocen.zan.sun;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,7 +17,6 @@ public class MainActivity extends AppCompatActivity {
                     .add(R.id.container, new ForecastFragment())
                     .commit();
         }
-
-
     }
+
 }

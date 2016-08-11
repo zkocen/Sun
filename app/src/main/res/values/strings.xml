@@ -8,4 +8,10 @@
     <string name="action_refresh" translatable="false">Refresh</string>
     <string name="title_activity_detail">Details</string>
     <string name="title_settings_detail">Settings</string>
+
+
+    <!-- edit text pref in settings -->
+    <string name="pref_location_label">Location</string>
+    <string name="pref_location_key" translatable="false">Locaton</string>
+    <string name="pref_location_default" translatable="false">94043</string>
 </resources>

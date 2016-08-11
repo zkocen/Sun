@@ -30,7 +30,7 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_settings_detail"
+            android:label="Settings"
             android:parentActivityName=".MainActivity"
             android:icon="@drawable/ic_reply_white_24dp">
             <meta-data
