@@ -30,6 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import android.text.format.Time;
 
+import java.sql.Date;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +72,21 @@ public class ForecastFragment extends Fragment {
             Intent intent = new Intent(getContext(), SettingsActivity.class);
             startActivity(intent);
         }
+        if (id == R.id.pref_loca_menu){
+            getLocationShowOnMaps();
+
+        }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getLocationShowOnMaps() {
+        SharedPreferences preferences = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+        String location = preferences.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                Uri.parse("http://maps.google.com/maps?q=" + location));
+        startActivity(intent);
     }
 
     private void updateWeather(){
@@ -143,7 +159,7 @@ public class ForecastFragment extends Fragment {
             String format = "json";
             String units = "metric";
             int numDays = 7;
-            String key = "dd424101f7064dbf93b35f5cb9abf42a";
+            String key = BuildConfig.OPEN_WEATHER_MAP_API_KEY_ZAN;
 
             try {
 
@@ -290,12 +306,28 @@ public class ForecastFragment extends Fragment {
     private String getReadableDateString(long t){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
-        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, dd. MM ");
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE, dd. MM");
         return shortenedDateFormat.format(t);
     }
 
     private String formatHighLows(double h, double l){
         // For presentation, assume the user doesn't care about tenths of a degree.
+        //I get the value from the settings dialog that tells if tem should be metrick or imperial
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String unitType = sharedPreferences.getString(
+                getString(R.string.pref_units_key),
+                getString(R.string.pref_units_metric));
+
+        if (unitType.equals(getString(R.string.pref_units_imperial))){
+            h = (h * 1.8) + 32;
+            l = (l * 1.8) +32;
+        } else if(!unitType.equals(R.string.pref_units_metric)){
+            Log.d(LOG_TAG, "Unit type not found " + unitType);
+        }
+
+
+
         long roundHigh = Math.round(h);
         long roundLow = Math.round(l);
 

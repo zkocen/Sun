@@ -17,9 +17,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-//    buildTypes.each {
-//                it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY_ZAN', 'dd424101f7064dbf93b35f5cb9abf42a'
-//    }
+    buildTypes.each {
+        it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY_ZAN', getMyApiKey('myApiKey');
+    }
+}
+
+def getMyApiKey(String property){
+    Properties properties = new Properties()
+    properties.load(new FileInputStream("/Users/zan/AndroidStudioProjects/Sun/app/api_key1"))
+    return "\"" + properties.getProperty(property) +"\""
 }
 
 dependencies {
