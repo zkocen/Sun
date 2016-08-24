@@ -52,6 +52,7 @@ public class ForecastFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.v(LOG_TAG, "onCreate()");
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
@@ -102,12 +103,13 @@ public class ForecastFragment extends Fragment {
     public void onStart() {
         super.onStart();
         updateWeather();
+        Log.v(LOG_TAG, "onStart()");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        Log.v(LOG_TAG, "onCreateView()");
 //dummy data before working api
 //        String[] forecastStr = {
 //                "Today, Sunny, 23C",
@@ -159,12 +161,11 @@ public class ForecastFragment extends Fragment {
             String format = "json";
             String units = "metric";
             int numDays = 7;
-            String key = BuildConfig.OPEN_WEATHER_MAP_API_KEY_ZAN;
 
             try {
 
                 final String FORECAST_BASE_URL =
-                        "http://api.openweathermap.org/data/2.5/forecast/DAILY?";
+                        "http://api.openweathermap.org/data/2.5/forecast/daily?";
                 final String QUERY_PARAM = "q";
                 final String FORMAT_PARAM = "mode";
                 final String UNITS_PARAM = "units";
@@ -176,7 +177,8 @@ public class ForecastFragment extends Fragment {
                         .appendQueryParameter(FORMAT_PARAM, format)
                         .appendQueryParameter(UNITS_PARAM, units)
                         .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                        .appendQueryParameter(API_KEY, key).build();
+                        .appendQueryParameter(API_KEY, BuildConfig.OPEN_WEATHER_MAP_API_KEY_ZAN)
+                        .build();
 
                 URL url = new URL(builtUri.toString());
 
@@ -242,12 +244,14 @@ public class ForecastFragment extends Fragment {
         }
     }
 
-    public String[] getWeatherDataFromJson(String forecastJsonStr, int numDays) throws JSONException{
+    public String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
+            throws JSONException{
         //names of the JSON objects that need to be extracted.
         final String OWM_LIST = "list";
         final String OWM_WEATHER = "weather";
-        final String OWM_MAX = "temp_max";
-        final String OWM_MIN = "temp_min";
+        final String OWM_TEMPERATURE = "temp";
+        final String OWM_MAX = "max";
+        final String OWM_MIN = "min";
         final String OWM_DESCRIPTION = "main";
 
 
@@ -263,10 +267,26 @@ public class ForecastFragment extends Fragment {
         Time dayTime = new Time();
         dayTime.setToNow();
 
+        // we start at the day returned by local time. Otherwise this is a mess.
         int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
-        dayTime = new Time();/// // now we work in UTC
 
-        String[] resultStr = new String[numDays];
+        // now we work exclusively in UTC
+        dayTime = new Time();
+
+        String[] resultStrs = new String[numDays];
+        // Data is fetched in Celsius by default.
+        // If user prefers to see in Fahrenheit, convert the values here.
+        // We do this rather than fetching in Fahrenheit so that the user can
+        // change this option without us having to re-fetch the data once
+        // we start storing the values in a database.
+
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+    String unitType = sharedPreferences.getString(
+            getString(R.string.pref_units_key),
+            getString(R.string.pref_units_metric)
+    );
+
         for (int i = 0; i < weatherArray.length(); i++) {
             // For now, using the format "Day, description, hi/low"
             String day;
@@ -283,23 +303,23 @@ public class ForecastFragment extends Fragment {
             dateTime = dayTime.setJulianDay(julianStartDay + i);
             day = getReadableDateString(dateTime);
 
-            // description is in a child array called "weather", which is 1 element long.
+            // description is in a child array called "temp", which is 1 element long.
             JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
             description = weatherObject.getString(OWM_DESCRIPTION);
 
 
             // Temperatures are in a child object called "main".
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_DESCRIPTION);
+            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
             double high = temperatureObject.getDouble(OWM_MAX);
             double low = temperatureObject.getDouble(OWM_MIN);
 
-            highAndLow = formatHighLows(high, low);
-            resultStr[i] = day + " - " + description + " - " + highAndLow;
+            highAndLow = formatHighLows(high, low, unitType);
+            resultStrs[i] = day + " - " + description + " - " + highAndLow;
         }
-        for (String s : resultStr) {
-            Log.v(LOG_TAG, "Forecast entry: " + s);
-        }
-        return resultStr;
+//        for (String s : resultStr) {
+//            Log.v(LOG_TAG, "Forecast entry: " + s);
+//        }
+        return resultStrs;
 
     }
 
@@ -310,28 +330,23 @@ public class ForecastFragment extends Fragment {
         return shortenedDateFormat.format(t);
     }
 
-    private String formatHighLows(double h, double l){
-        // For presentation, assume the user doesn't care about tenths of a degree.
-        //I get the value from the settings dialog that tells if tem should be metrick or imperial
-        SharedPreferences sharedPreferences =
-                PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String unitType = sharedPreferences.getString(
-                getString(R.string.pref_units_key),
-                getString(R.string.pref_units_metric));
+    /**
+     * Prepare the weather high/lows for presentation.
+     */
+    private String formatHighLows(double high, double low, String unitType) {
 
-        if (unitType.equals(getString(R.string.pref_units_imperial))){
-            h = (h * 1.8) + 32;
-            l = (l * 1.8) +32;
-        } else if(!unitType.equals(R.string.pref_units_metric)){
-            Log.d(LOG_TAG, "Unit type not found " + unitType);
+        if (unitType.equals(getString(R.string.pref_units_imperial))) {
+            high = (high * 1.8) + 32;
+            low = (low * 1.8) + 32;
+        } else if (!unitType.equals(getString(R.string.pref_units_metric))) {
+            Log.d(LOG_TAG, "Unit type not found: " + unitType);
         }
 
+        // For presentation, assume the user doesn't care about tenths of a degree.
+        long roundedHigh = Math.round(high);
+        long roundedLow = Math.round(low);
 
-
-        long roundHigh = Math.round(h);
-        long roundLow = Math.round(l);
-
-        String highLowStr = roundHigh + " / " + roundLow;
+        String highLowStr = roundedHigh + "/" + roundedLow;
         return highLowStr;
     }
 }
